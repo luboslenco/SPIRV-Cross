@@ -95,7 +95,7 @@ public:
 		// GL_ARB_shading_language_420pack extensions is used to be able to support
 		// layout(binding) on UBOs and samplers.
 		// If disabled on older targets, binding decorations will be stripped.
-		bool enable_420pack_extension = true;
+		bool enable_420pack_extension = false;
 
 		// In non-Vulkan GLSL, emit push constant blocks as UBOs rather than plain uniforms.
 		bool emit_push_constant_as_uniform_buffer = false;
