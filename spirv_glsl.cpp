@@ -11716,7 +11716,10 @@ bool CompilerGLSL::has_extension(const std::string &ext) const
 void CompilerGLSL::require_extension(const std::string &ext)
 {
 	if (!has_extension(ext))
+	{
 		forced_extensions.push_back(ext);
+		force_recompile();
+	}
 }
 
 void CompilerGLSL::require_extension_internal(const string &ext)
