@@ -9208,6 +9208,10 @@ string CompilerMSL::get_type_address_space(const SPIRType &type, uint32_t id, bo
 			// Subpass inputs are passed around by value.
 			addr_space = "";
 		}
+		else if (type.array[0] > 0)
+		{
+			addr_space = "constant";
+		}
 		break;
 
 	case StorageClassFunction:
