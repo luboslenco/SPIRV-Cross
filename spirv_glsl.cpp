@@ -199,6 +199,9 @@ void CompilerGLSL::init()
 	if (decimal_point && *decimal_point != '\0')
 		current_locale_radix_character = *decimal_point;
 #endif
+
+	transpose2 = transpose3 = transpose4 = transpose2x3 = transpose2x4 = transpose3x2 = transpose3x4 = transpose4x2 =
+	    transpose4x3 = false;
 }
 
 static const char *to_pls_layout(PlsFormat format)
@@ -733,6 +736,72 @@ void CompilerGLSL::emit_header()
 		}
 		else
 			statement("#extension ", ext, " : require");
+	}
+
+	if (((!options.es && options.version < 120) || (options.es && options.version < 300)) &&
+	    (transpose2 || transpose3 || transpose4 || transpose2x3 || transpose2x4 || transpose3x2 || transpose3x4 ||
+	     transpose4x2 || transpose4x3))
+
+	{
+
+		statement("");
+
+		if (transpose2)
+		{
+			statement("mat2 transpose(mat2 m) { return mat2(m[0][0], m[1][0], m[0][1], m[1][1]); }");
+		}
+
+		if (transpose3)
+		{
+			statement(
+			    "mat3 transpose(mat3 m) { return mat3(m[0][0], m[1][0], m[2][0], m[0][1], m[1][1], m[2][1], m[0][2], "
+			    "m[1][2], m[2][2]); }");
+		}
+
+		if (transpose2x3)
+		{
+			statement(
+			    "mat2x3 transpose(mat3x2 m) { return mat3(m[0][0], m[1][0], m[2][0], m[0][1], m[1][1], m[2][1]); }");
+		}
+
+		if (transpose3x2)
+		{
+			statement(
+			    "mat3x2 transpose(mat2x3 m) { return mat3(m[0][0], m[1][0], m[0][1], m[1][1], m[0][2], m[1][2]); }");
+		}
+
+		if (transpose4)
+		{
+			statement(
+			    "mat4 transpose(mat4 m) { return mat4(m[0][0], m[1][0], m[2][0], m[3][0], m[0][1], m[1][1], m[2][1], "
+			    "m[3][1], m[0][2], m[1][2], m[2][2], m[3][2], m[0][3], m[1][3], m[2][3], m[3][3]); }");
+		}
+
+		if (transpose2x4)
+		{
+			statement("mat2x4 transpose(mat4x2 m) { return mat4(m[0][0], m[1][0], m[2][0], m[3][0], m[0][1], m[1][1], "
+			          "m[2][1], m[3][1]); }");
+		}
+
+		if (transpose4x2)
+		{
+			statement("mat4x2 transpose(mat2x4 m) { return mat4(m[0][0], m[1][0], m[0][1], m[1][1], m[0][2], m[1][2], "
+			          "m[0][3], m[1][3]); }");
+		}
+
+		if (transpose3x4)
+		{
+			statement(
+			    "mat3x4 transpose(mat4x3 m) { return mat3x4(m[0][0], m[1][0], m[2][0], m[3][0], m[0][1], m[1][1], "
+			    "m[2][1], m[3][1], m[0][2], m[1][2], m[2][2], m[3][2]); }");
+		}
+
+		if (transpose4x3)
+		{
+			statement(
+			    "mat4x3 transpose(mat3x4 m) { return mat4x3(m[0][0], m[1][0], m[2][0], m[0][1], m[1][1], m[2][1], "
+			    "m[0][2], m[1][2], m[2][2], m[0][3], m[1][3], m[2][3]); }");
+		}
 	}
 
 	for (auto &header : header_lines)
@@ -9227,8 +9296,92 @@ void CompilerGLSL::emit_instruction(const Instruction &instruction)
 		break;
 
 	case OpTranspose:
+	{
 		GLSL_UFOP(transpose);
+		auto type = get<SPIRType>(ops[0]);
+		switch (type.columns)
+		{
+		case 2:
+			switch (type.vecsize)
+			{
+			case 2:
+				if (!transpose2)
+				{
+					transpose2 = true;
+					force_recompile();
+				}
+				break;
+			case 3:
+				if (!transpose2x3)
+				{
+					transpose2x3 = true;
+					force_recompile();
+				}
+				break;
+			case 4:
+				if (!transpose2x4)
+				{
+					transpose2x4 = true;
+					force_recompile();
+				}
+				break;
+			}
+			break;
+		case 3:
+			switch (type.vecsize)
+			{
+			case 2:
+				if (!transpose3x2)
+				{
+					transpose3x2 = true;
+					force_recompile();
+				}
+				break;
+			case 3:
+				if (!transpose3)
+				{
+					transpose3 = true;
+					force_recompile();
+				}
+				break;
+			case 4:
+				if (!transpose3x4)
+				{
+					transpose3x4 = true;
+					force_recompile();
+				}
+				break;
+			}
+			break;
+		case 4:
+			switch (type.vecsize)
+			{
+			case 2:
+				if (!transpose4x2)
+				{
+					transpose4x2 = true;
+					force_recompile();
+				}
+				break;
+			case 3:
+				if (!transpose4x3)
+				{
+					transpose4x3 = true;
+					force_recompile();
+				}
+				break;
+			case 4:
+				if (!transpose4)
+				{
+					transpose4 = true;
+					force_recompile();
+				}
+				break;
+			}
+			break;
+		}
 		break;
+	}
 
 	case OpSRem:
 	{

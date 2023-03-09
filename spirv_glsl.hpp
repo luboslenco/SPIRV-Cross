@@ -661,6 +661,9 @@ protected:
 
 	uint32_t statement_count = 0;
 
+	bool transpose2, transpose3, transpose4, transpose2x3, transpose2x4, transpose3x2, transpose3x4, transpose4x2,
+	    transpose4x3;
+
 	inline bool is_legacy() const
 	{
 		return (options.es && options.version < 300) || (!options.es && options.version < 130);
