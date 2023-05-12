@@ -2548,7 +2548,7 @@ void CompilerHLSL::emit_hlsl_entry_point()
 			{
 				auto name = to_name(var.self);
 
-				if (legacy && execution.model == ExecutionModelFragment)
+				if (legacy && execution.model == ExecutionModelFragment && type.array.empty())
 				{
 					string output_filler;
 					for (uint32_t size = type.vecsize; size < 4; ++size)
